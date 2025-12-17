@@ -98,3 +98,10 @@ def extract_markdown_links(text):
     pattern = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
     matches = re.findall(pattern, text)
     return matches
+
+def extract_title(markdown):
+    for lines in markdown.split('\n'):
+        if lines.startswith('#'):
+            lines = lines.replace('#', '').strip()
+            return lines
+    raise Exception('No title found in markdown')

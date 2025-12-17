@@ -1,5 +1,8 @@
 from enum import Enum
-
+from htmlnode import ParentNode, LeafNode
+from textnode import text_node_to_html_node, TextNode, TextType
+from inline_markdown import text_to_textnodes
+import re
 
 class BlockType(Enum):
     PARAGRAPH = "paragraph"
@@ -46,3 +49,51 @@ def block_to_block_type(block):
             i += 1
         return BlockType.OLIST
     return BlockType.PARAGRAPH
+
+def text_to_children(text):
+    return [text_node_to_html_node(n) for n in text_to_textnodes(text)]
+
+def markdown_to_html_node(markdown):
+    blocks = markdown_to_blocks(markdown)
+    html_blocks = []
+
+    for block in blocks:
+        btype = block_to_block_type(block)
+
+        if btype == BlockType.HEADING:
+            parts = block.split()
+            level = len(parts[0])
+            text = " ".join(parts[1:])
+            node = ParentNode(f"h{level}", text_to_children(text))
+
+        elif btype == BlockType.ULIST:
+            items = []
+            for line in block.split("\n"):
+                text = line[2:].strip()
+                items.append(ParentNode("li", text_to_children(text)))
+            node = ParentNode("ul", items)
+
+        elif btype == BlockType.OLIST:
+            items = []
+            for line in block.split("\n"):
+                text = re.sub(r"^\d+\.\s*", "", line)
+                items.append(ParentNode("li", text_to_children(text)))
+            node = ParentNode("ol", items)
+
+        elif btype == BlockType.QUOTE:
+            cleaned = "\n".join(line.lstrip("> ").strip() for line in block.split("\n"))
+            node = ParentNode("blockquote", text_to_children(cleaned))
+
+        elif btype == BlockType.CODE:
+            lines = block.split("\n")[1:-1]
+            code = "\n".join(lines) + "\n"
+            code_node = text_node_to_html_node(TextNode(code, TextType.CODE))
+            node = ParentNode("pre", [code_node])
+
+        else:
+            cleaned = " ".join(line.strip() for line in block.split("\n"))
+            node = ParentNode("p", text_to_children(cleaned))
+
+        html_blocks.append(node)
+
+    return ParentNode("div", html_blocks)
