@@ -34,7 +34,7 @@ def generate_page(from_path, template_path, dest_path, basepath):
 
         if not basepath.endswith("/"):
             basepath = basepath + "/"  
-                  
+
         template = template.replace('href="/',f'href="{basepath}')
         template = template.replace('src="/',f'src="{basepath}')
         pg.write(f'{template}')
@@ -68,7 +68,7 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, bas
     pages = crawl_content(dir_path_content)
 
     for page in pages:
-        dest_dir_path = page.replace('content', 'public')
+        dest_dir_path = page.replace('content', 'docs')
         dest_dir_path = os.path.splitext(dest_dir_path)[0] + ".html"
         print(page,template_path, dest_dir_path)   
         generate_page(page,template_path, dest_dir_path, basepath) 
