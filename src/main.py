@@ -16,6 +16,7 @@ def main():
     #generate_page("content", ".", "docs")
     generate_pages_recursive("content", ".", "docs", basepath)
     
+    open("docs/.nojekyll", "w").close()
 
 
 
