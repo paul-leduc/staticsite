@@ -3,7 +3,7 @@ import shutil
 from markdown_blocks import markdown_to_html_node
 from inline_markdown import extract_title
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f'Generating page from {from_path} to {dest_path} using {template_path}')
     #markdown_file = os.path.join(from_path, 'index.md')
     markdown_file = from_path
@@ -31,6 +31,12 @@ def generate_page(from_path, template_path, dest_path):
     with open(page, 'w') as pg:
         template = template.replace('{{ Title }}', f'{title}')
         template = template.replace('{{ Content }}', f'{html.to_html()}')
+
+        if not basepath.endswith("/"):
+            basepath = basepath + "/"  
+                  
+        template = template.replace('href="/',f'href="{basepath}')
+        template = template.replace('src="/',f'src="{basepath}')
         pg.write(f'{template}')
 
 def crawl_content(dir_path_content):
@@ -58,11 +64,11 @@ def crawl_content(dir_path_content):
 
     return content
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     pages = crawl_content(dir_path_content)
 
     for page in pages:
         dest_dir_path = page.replace('content', 'public')
         dest_dir_path = os.path.splitext(dest_dir_path)[0] + ".html"
         print(page,template_path, dest_dir_path)   
-        generate_page(page,template_path, dest_dir_path) 
+        generate_page(page,template_path, dest_dir_path, basepath) 
